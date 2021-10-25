@@ -1,4 +1,5 @@
 #!/bin/sh
+
 #отключаем SELinux
 sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
 setenforce 0
@@ -32,14 +33,14 @@ wget https://github.com/it-uni/files/raw/main/RA.zip
 unzip RA.zip
 
 #копируем файлы по папкам
-cp -R FILES/front/* /opt/FE20/react/front/
-cp FILES/ROOT.war /opt/FE20/spring/
-cp FILES/*.sql /opt/FE20/postgres/scripts/
-cp FILES/*.yml /opt/FE20/
-cp FILES/Dockerfile_back /opt/FE20/spring/
-cp FILES/nginx.conf /opt/FE20/react/
+cp -R front/* /opt/FE20/react/front/
+cp ROOT.war /opt/FE20/spring/
+cp *.sql /opt/FE20/postgres/scripts/
+cp *.yml /opt/FE20/
+cp Dockerfile_back /opt/FE20/spring/
+cp nginx.conf /opt/FE20/react/
 
 #разворачиваем контейнеры
-cd /opt/FE20 && docker-compose up --build -d
+#cd /opt/FE20 && docker-compose up --build -d
 
 
