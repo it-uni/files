@@ -28,7 +28,7 @@ mkdir postgres && mkdir ./postgres/pgdata && mkdir ./postgres/scripts
 
 #скачиваем и распаковываем стартовые скрипты
 cd /opt/FE20-MMK
-wget https://github.com/it-uni/test/raw/main/MMK.zip
+wget https://github.com/it-uni/files/raw/main/MMK.zip
 unzip MMK.zip
 
 #копируем файлы по папкам
