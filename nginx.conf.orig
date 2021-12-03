@@ -1,0 +1,105 @@
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log;
+pid /var/run/nginx.pid;
+
+# Load dynamic modules. See /usr/share/nginx/README.dynamic.
+include /usr/share/nginx/modules/*.conf;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile            on;
+    tcp_nopush          on;
+    tcp_nodelay         on;
+    keepalive_timeout   65;
+    types_hash_max_size 2048;
+    client_max_body_size 1024G;
+    
+    gzip on;
+    gzip_comp_level 9;
+    gzip_min_length 256;
+     gzip_types
+     application/atom+xml
+     application/geo+json
+     application/javascript
+     application/x-javascript
+     application/json
+     application/ld+json
+     application/manifest+json
+     application/rdf+xml
+     application/rss+xml
+     application/xhtml+xml
+     application/xml
+     font/eot
+     font/otf
+     font/ttf
+     image/svg+xml
+     text/css
+     text/javascript
+     text/plain
+     text/xml;
+    
+    
+    include             /etc/nginx/mime.types;
+    default_type        application/octet-stream;
+    
+    # Load modular configuration files from the /etc/nginx/conf.d directory.
+    # See http://nginx.org/en/docs/ngx_core_module.html#include
+    # for more information.
+    # include /etc/nginx/conf.d/*.conf;
+    
+    #бэк
+    upstream backend {
+        least_conn;
+        server 192.168.0.15:82;
+    }
+
+    server {
+        listen       80;
+        server_name _;
+
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+            try_files $uri $uri/ /index.html;
+        }
+
+         #... login
+        location /login/ {
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_redirect off;
+            proxy_set_header HOST $host;
+            proxy_pass http://backend/login;
+        }
+
+         # ... к api
+        location ~* /api/.* {
+            #proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            #proxy_set_header Host $http_host;
+            #proxy_set_header X-Forwarded-Proto http;
+            #proxy_redirect off;
+            #proxy_set_header HOST $host;
+            proxy_set_header X-Forwarded-For $remote_addr;
+            proxy_pass http://backend;
+        }
+
+        location = /fromLDAP {
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header Host $http_host;
+            proxy_redirect off;
+            proxy_pass http://backend;
+        }
+
+        error_page 404 500 502 503 504 /index.html;
+    }
+}
+
